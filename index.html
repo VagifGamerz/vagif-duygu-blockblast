@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Vagif & Duygu | Block Blast Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root { --main: #ffcc00; --bg: #121212; --grid: #2a2a2a; }
+        body, html { background: var(--bg); color: white; font-family: 'Ubuntu', sans-serif; margin: 0; padding: 0; text-align: center; height: 100%; overflow: hidden; touch-action: none; }
+        
+        /* Menu & Header */
+        .header { background: #1e1e1e; padding: 15px; border-bottom: 3px solid var(--main); }
+        .stats { display: flex; justify-content: space-around; padding: 10px; font-size: 1.1rem; }
+        .lang-bar { margin: 10px; }
+        .l-btn { cursor: pointer; margin: 0 10px; color: var(--main); font-size: 12px; font-weight: bold; }
+
+        /* Game Board */
+        #game-container { display: none; flex-direction: column; align-items: center; justify-content: center; height: calc(100vh - 120px); }
+        #grid { display: grid; grid-template-columns: repeat(8, 11vw); grid-template-rows: repeat(8, 11vw); gap: 5px; background: #333; padding: 10px; border-radius: 10px; max-width: 95vw; }
+        @media (min-width: 500px) { #grid { grid-template-columns: repeat(8, 45px); grid-template-rows: repeat(8, 45px); } }
+        
+        .cell { background: var(--grid); border-radius: 4px; }
+        .filled { background: var(--main); box-shadow: inset 0 0 10px rgba(0,0,0,0.5); border: 1px solid #fff; }
+
+        /* Start Screen */
+        #start-screen { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .start-btn { padding: 20px 60px; font-size: 1.5rem; background: var(--main); border: none; border-radius: 50px; cursor: pointer; font-weight: bold; transition: 0.3s; box-shadow: 0 5px 15px rgba(255,204,0,0.3); }
+        .start-btn:hover { transform: scale(1.1); box-shadow: 0 0 25px var(--main); }
+
+        .brand { font-size: 0.8rem; color: #666; position: absolute; bottom: 20px; width: 100%; }
+    </style>
+</head>
+<body>
+
+    <div id="start-screen">
+        <div class="lang-bar">
+            <span onclick="setLang('az')" class="l-btn">AZERBAIJAN</span> | 
+            <span onclick="setLang('tr')" class="l-btn">TÜRKÇE</span> | 
+            <span onclick="setLang('en')" class="l-btn">ENGLISH</span>
+        </div>
+        <h1 style="color: var(--main); font-size: 2.5rem; margin-bottom: 5px;">BLOCK BLAST</h1>
+        <p style="margin-bottom: 40px; color: #aaa;" id="welcome">Vagif və Duygu tərəfindən yaradıldı</p>
+        
+        <button class="start-btn" id="start-btn" onclick="startGame()">BAŞLAT</button>
+        
+        <div class="brand">© 2026 Vagif & Duygu Digital Studio</div>
+    </div>
+
+    <div id="game-container">
+        <div class="header" style="width: 100%; position: fixed; top: 0;">
+            <h2 id="m-title" style="margin: 0; font-size: 1rem; color: var(--main);">VAGIF & DUYGU GAMES</h2>
+            <div class="stats">
+                <div><span id="txt-score">Xal</span>: <span id="score">0</span></div>
+                <div><span id="txt-high">Rekord</span>: <span id="high">0</span></div>
+            </div>
+        </div>
+        
+        <div id="grid"></div>
+        <p id="msg" style="margin-top:20px; color: var(--main); font-weight: bold;">Blokları yerləşdirin!</p>
+    </div>
+
+    <script>
+        let score = 0;
+        let highScore = localStorage.getItem('blockHigh') || 0;
+        document.getElementById('high').innerText = highScore;
+
+        const ui = {
+            az: { title: "VAGIF & DUYGU GAMES", welcome: "Vagif və Duygu tərəfindən yaradıldı", start: "BAŞLAT", score: "Xal", high: "Rekord", msg: "Blokları yerləşdirin!" },
+            tr: { title: "VAGIF & DUYGU OYUNLARI", welcome: "Vagif ve Duygu tarafından yapıldı", start: "BAŞLAT", score: "Puan", high: "Rekor", msg: "Blokları yerleştirin!" },
+            en: { title: "VAGIF & DUYGU GAMES", welcome: "Created by Vagif & Duygu", start: "START", score: "Score", high: "High Score", msg: "Place the blocks!" }
+        };
+
+        function setLang(l) {
+            document.getElementById('m-title').innerText = ui[l].title;
+            document.getElementById('welcome').innerText = ui[l].welcome;
+            document.getElementById('start-btn').innerText = ui[l].start;
+            document.getElementById('txt-score').innerText = ui[l].score;
+            document.getElementById('txt-high').innerText = ui[l].high;
+            document.getElementById('msg').innerText = ui[l].msg;
+        }
+
+        function startGame() {
+            // FULL SCREEN AKTİV ETMƏK
+            let elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) { /* Safari */
+                elem.webkitRequestFullscreen();
+            } else if (elem.msRequestFullscreen) { /* IE11 */
+                elem.msRequestFullscreen();
+            }
+
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('game-container').style.display = 'flex';
+            createGrid();
+        }
+
+        function createGrid() {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            for (let i = 0; i < 64; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.onclick = function() {
+                    if(!this.classList.contains('filled')) {
+                        this.classList.add('filled');
+                        updateScore();
+                    }
+                };
+                grid.appendChild(cell);
+            }
+        }
+
+        function updateScore() {
+            score += 10;
+            document.getElementById('score').innerText = score;
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('blockHigh', highScore);
+                document.getElementById('high').innerText = highScore;
+            }
+        }
+    </script>
+</body>
+</html>
