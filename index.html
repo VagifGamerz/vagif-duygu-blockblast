@@ -3,173 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Vagif & Duygu | Real Block Blast</title>
+    <title>Vagif & Duygu | Block Blast Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@700&display=swap" rel="stylesheet">
     <style>
-        :root { --main: #ffcc00; --bg: #0f0f0f; --cell: #252525; }
-        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: var(--bg); color: white; font-family: sans-serif; touch-action: none; }
+        :root { --main: #ffcc00; --bg: #121212; --grid: #2a2a2a; }
+        body, html { background: var(--bg); color: white; font-family: 'Ubuntu', sans-serif; margin: 0; padding: 0; text-align: center; height: 100%; overflow: hidden; touch-action: none; }
         
+        /* Menu & Header */
+        .header { background: #1e1e1e; padding: 15px; border-bottom: 3px solid var(--main); }
+        .stats { display: flex; justify-content: space-around; padding: 10px; font-size: 1.1rem; }
+        .lang-bar { margin: 10px; }
+        .l-btn { cursor: pointer; margin: 0 10px; color: var(--main); font-size: 12px; font-weight: bold; }
+
+        /* Game Board */
+        #game-container { display: none; flex-direction: column; align-items: center; justify-content: center; height: calc(100vh - 120px); }
+        #grid { display: grid; grid-template-columns: repeat(8, 11vw); grid-template-rows: repeat(8, 11vw); gap: 5px; background: #333; padding: 10px; border-radius: 10px; max-width: 95vw; }
+        @media (min-width: 500px) { #grid { grid-template-columns: repeat(8, 45px); grid-template-rows: repeat(8, 45px); } }
+        
+        .cell { background: var(--grid); border-radius: 4px; }
+        .filled { background: var(--main); box-shadow: inset 0 0 10px rgba(0,0,0,0.5); border: 1px solid #fff; }
+
         /* Start Screen */
-        #start-screen { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; }
-        .start-btn { padding: 15px 50px; font-size: 1.5rem; background: var(--main); border: none; border-radius: 50px; cursor: pointer; font-weight: bold; box-shadow: 0 0 20px var(--main); }
+        #start-screen { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .start-btn { padding: 20px 60px; font-size: 1.5rem; background: var(--main); border: none; border-radius: 50px; cursor: pointer; font-weight: bold; transition: 0.3s; box-shadow: 0 5px 15px rgba(255,204,0,0.3); }
+        .start-btn:hover { transform: scale(1.1); box-shadow: 0 0 25px var(--main); }
 
-        /* Game UI */
-        #game-container { display: none; flex-direction: column; height: 100vh; align-items: center; justify-content: center; }
-        .header { width: 100%; position: absolute; top: 0; padding: 15px 0; background: #1a1a1a; display: flex; justify-content: space-around; border-bottom: 2px solid var(--main); font-weight: bold; }
-
-        /* Grid */
-        #grid { display: grid; grid-template-columns: repeat(8, 42px); grid-template-rows: repeat(8, 42px); gap: 4px; background: #333; padding: 8px; border-radius: 8px; position: relative; }
-        .cell { width: 42px; height: 42px; background: var(--cell); border-radius: 4px; transition: 0.1s; }
-        .filled { background: var(--main) !important; border: 1px solid #fff; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
-
-        /* Bottom Pieces */
-        #pieces-container { display: flex; justify-content: space-around; align-items: center; width: 100%; height: 150px; margin-top: 30px; }
-        .piece { display: grid; gap: 2px; cursor: grab; position: relative; transition: opacity 0.3s; }
-        .piece div { background: var(--main); border-radius: 3px; width: 25px; height: 25px; }
-
-        /* Game Over */
-        #game-over { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); flex-direction: column; align-items: center; justify-content: center; z-index: 2000; }
-        .over-box { background: #222; padding: 30px; border-radius: 20px; border: 2px solid var(--main); text-align: center; width: 80%; }
+        .brand { font-size: 0.8rem; color: #666; position: absolute; bottom: 20px; width: 100%; }
     </style>
 </head>
 <body>
 
     <div id="start-screen">
-        <h1 style="color:var(--main)">VAGIF & DUYGU</h1>
-        <p style="margin-top:-15px; color:#888">BLOCK BLAST EDITION</p>
-        <button class="start-btn" onclick="startGame()">BAŞLAT</button>
+        <div class="lang-bar">
+            <span onclick="setLang('az')" class="l-btn">AZERBAIJAN</span> | 
+            <span onclick="setLang('tr')" class="l-btn">TÜRKÇE</span> | 
+            <span onclick="setLang('en')" class="l-btn">ENGLISH</span>
+        </div>
+        <h1 style="color: var(--main); font-size: 2.5rem; margin-bottom: 5px;">BLOCK BLAST</h1>
+        <p style="margin-bottom: 40px; color: #aaa;" id="welcome">Vagif və Duygu tərəfindən yaradıldı</p>
+        
+        <button class="start-btn" id="start-btn" onclick="startGame()">BAŞLAT</button>
+        
+        <div class="brand">© 2026 Vagif & Duygu Digital Studio</div>
     </div>
 
     <div id="game-container">
-        <div class="header">
-            <div>SCORE: <span id="score">0</span></div>
-            <div>HIGH: <span id="high">0</span></div>
+        <div class="header" style="width: 100%; position: fixed; top: 0;">
+            <h2 id="m-title" style="margin: 0; font-size: 1rem; color: var(--main);">VAGIF & DUYGU GAMES</h2>
+            <div class="stats">
+                <div><span id="txt-score">Xal</span>: <span id="score">0</span></div>
+                <div><span id="txt-high">Rekord</span>: <span id="high">0</span></div>
+            </div>
         </div>
+        
         <div id="grid"></div>
-        <div id="pieces-container"></div>
-    </div>
-
-    <div id="game-over">
-        <div class="over-box">
-            <h1 style="color:red">GAME OVER</h1>
-            <h2 id="final-score">XAL: 0</h2>
-            <button class="start-btn" onclick="location.reload()" style="font-size:1rem; padding:10px 30px">EXIT / RESTART</button>
-        </div>
+        <p id="msg" style="margin-top:20px; color: var(--main); font-weight: bold;">Blokları yerləşdirin!</p>
     </div>
 
     <script>
         let score = 0;
-        let high = localStorage.getItem('vd_high') || 0;
-        document.getElementById('high').innerText = high;
-        const gridCells = [];
-        let boardState = Array(64).fill(0);
+        let highScore = localStorage.getItem('blockHigh') || 0;
+        document.getElementById('high').innerText = highScore;
+
+        const ui = {
+            az: { title: "VAGIF & DUYGU GAMES", welcome: "Vagif və Duygu tərəfindən yaradıldı", start: "BAŞLAT", score: "Xal", high: "Rekord", msg: "Blokları yerləşdirin!" },
+            tr: { title: "VAGIF & DUYGU OYUNLARI", welcome: "Vagif ve Duygu tarafından yapıldı", start: "BAŞLAT", score: "Puan", high: "Rekor", msg: "Blokları yerleştirin!" },
+            en: { title: "VAGIF & DUYGU GAMES", welcome: "Created by Vagif & Duygu", start: "START", score: "Score", high: "High Score", msg: "Place the blocks!" }
+        };
+
+        function setLang(l) {
+            document.getElementById('m-title').innerText = ui[l].title;
+            document.getElementById('welcome').innerText = ui[l].welcome;
+            document.getElementById('start-btn').innerText = ui[l].start;
+            document.getElementById('txt-score').innerText = ui[l].score;
+            document.getElementById('txt-high').innerText = ui[l].high;
+            document.getElementById('msg').innerText = ui[l].msg;
+        }
 
         function startGame() {
-            let e = document.documentElement;
-            if (e.requestFullscreen) e.requestFullscreen();
-            else if (e.webkitRequestFullscreen) e.webkitRequestFullscreen();
+            // FULL SCREEN AKTİV ETMƏK
+            let elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) { /* Safari */
+                elem.webkitRequestFullscreen();
+            } else if (elem.msRequestFullscreen) { /* IE11 */
+                elem.msRequestFullscreen();
+            }
 
             document.getElementById('start-screen').style.display = 'none';
             document.getElementById('game-container').style.display = 'flex';
-            initGrid();
-            spawnPieces();
+            createGrid();
         }
 
-        function initGrid() {
+        function createGrid() {
             const grid = document.getElementById('grid');
             grid.innerHTML = '';
             for (let i = 0; i < 64; i++) {
                 const cell = document.createElement('div');
                 cell.className = 'cell';
-                grid.appendChild(cell);
-                gridCells.push(cell);
-            }
-        }
-
-        const shapes = [
-            { s: [[1, 1], [1, 1]], w: 2 }, // Kvadrat
-            { s: [[1, 1, 1]], w: 3 },      // Uzun
-            { s: [[1], [1], [1]], w: 1 },  // Dik
-            { s: [[1]], w: 1 }             // Tək
-        ];
-
-        function spawnPieces() {
-            const container = document.getElementById('pieces-container');
-            container.innerHTML = '';
-            for (let i = 0; i < 3; i++) {
-                const sh = shapes[Math.floor(Math.random() * shapes.length)];
-                const piece = document.createElement('div');
-                piece.className = 'piece';
-                piece.style.gridTemplateColumns = `repeat(${sh.w}, 25px)`;
-                
-                sh.s.flat().forEach(v => {
-                    const d = document.createElement('div');
-                    if (!v) d.style.visibility = 'hidden';
-                    piece.appendChild(d);
-                });
-
-                handleDrag(piece, sh);
-                container.appendChild(piece);
-            }
-        }
-
-        function handleDrag(p, sh) {
-            p.ontouchstart = (e) => {
-                let touch = e.touches[0];
-                let rect = p.getBoundingClientRect();
-                let offsetX = touch.clientX - rect.left;
-                let offsetY = touch.clientY - rect.top;
-
-                p.style.position = 'fixed';
-                p.style.zIndex = '1000';
-                p.style.transform = 'scale(1.2)';
-
-                const move = (te) => {
-                    p.style.left = te.touches[0].clientX - offsetX + 'px';
-                    p.style.top = te.touches[0].clientY - offsetY + 'px';
-                };
-
-                const end = (te) => {
-                    document.removeEventListener('touchmove', move);
-                    document.removeEventListener('touchend', end);
-                    
-                    p.style.display = 'none';
-                    let dropElem = document.elementFromPoint(te.changedTouches[0].clientX, te.changedTouches[0].clientY);
-                    p.style.display = 'grid';
-
-                    let cellIdx = gridCells.indexOf(dropElem);
-                    if (cellIdx !== -1 && boardState[cellIdx] === 0) {
-                        boardState[cellIdx] = 1;
-                        gridCells[cellIdx].classList.add('filled');
-                        score += 10;
-                        document.getElementById('score').innerText = score;
-                        p.remove();
-                        if (document.getElementById('pieces-container').children.length === 0) spawnPieces();
-                        checkLines();
-                    } else {
-                        p.style.position = 'relative';
-                        p.style.left = '0'; p.style.top = '0';
-                        p.style.transform = 'scale(1)';
+                cell.onclick = function() {
+                    if(!this.classList.contains('filled')) {
+                        this.classList.add('filled');
+                        updateScore();
                     }
                 };
-
-                document.addEventListener('touchmove', move);
-                document.addEventListener('touchend', end);
-            };
-        }
-
-        function checkLines() {
-            // Sıra partlatma (Sadeləşdirilmiş)
-            if (score > high) {
-                high = score;
-                localStorage.setItem('vd_high', high);
-                document.getElementById('high').innerText = high;
+                grid.appendChild(cell);
             }
-            // Əgər yer yoxdursa: showGameOver() çağıra bilərsən
         }
 
-        function showGameOver() {
-            document.getElementById('game-over').style.display = 'flex';
-            document.getElementById('final-score').innerText = "XAL: " + score;
+        function updateScore() {
+            score += 10;
+            document.getElementById('score').innerText = score;
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('blockHigh', highScore);
+                document.getElementById('high').innerText = highScore;
+            }
         }
     </script>
 </body>
