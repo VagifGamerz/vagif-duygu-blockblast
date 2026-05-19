@@ -2,125 +2,275 @@
 <html lang="az">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Vagif & Duygu | Block Blast Edition</title>
-    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PUBG Mobile Ultra - Shooting Range</title>
     <style>
-        :root { --main: #ffcc00; --bg: #121212; --grid: #2a2a2a; }
-        body, html { background: var(--bg); color: white; font-family: 'Ubuntu', sans-serif; margin: 0; padding: 0; text-align: center; height: 100%; overflow: hidden; touch-action: none; }
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+        body, html { width: 100%; height: 100%; overflow: hidden; background: #0b0c10; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         
-        /* Menu & Header */
-        .header { background: #1e1e1e; padding: 15px; border-bottom: 3px solid var(--main); }
-        .stats { display: flex; justify-content: space-around; padding: 10px; font-size: 1.1rem; }
-        .lang-bar { margin: 10px; }
-        .l-btn { cursor: pointer; margin: 0 10px; color: var(--main); font-size: 12px; font-weight: bold; }
-
-        /* Game Board */
-        #game-container { display: none; flex-direction: column; align-items: center; justify-content: center; height: calc(100vh - 120px); }
-        #grid { display: grid; grid-template-columns: repeat(8, 11vw); grid-template-rows: repeat(8, 11vw); gap: 5px; background: #333; padding: 10px; border-radius: 10px; max-width: 95vw; }
-        @media (min-width: 500px) { #grid { grid-template-columns: repeat(8, 45px); grid-template-rows: repeat(8, 45px); } }
+        /* Əsas Oyun Sahəsi */
+        #game-container { width: 100%; height: 100%; position: relative; cursor: crosshair; background: radial-gradient(circle, #1f2833 0%, #0b0c10 100%); display: none; }
         
-        .cell { background: var(--grid); border-radius: 4px; }
-        .filled { background: var(--main); box-shadow: inset 0 0 10px rgba(0,0,0,0.5); border: 1px solid #fff; }
+        /* ANA MENYÜ (MAIN MENU) */
+        #main-menu { position: absolute; width: 100%; height: 100%; background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.9)), radial-gradient(circle, #2c3e50, #000); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; }
+        #menu-title { font-size: 50px; color: #f1c40f; text-transform: uppercase; font-weight: 900; letter-spacing: 3px; margin-bottom: 30px; text-shadow: 0 0 20px rgba(241,196,15,0.5); text-align: center; }
+        
+        /* Dil Paneli */
+        .lang-panel { display: flex; gap: 15px; margin-bottom: 40px; }
+        .lang-btn { padding: 10px 20px; background: #1f2833; border: 2px solid #45f3ff; color: #fff; font-weight: bold; border-radius: 5px; cursor: pointer; transition: 0.3s; }
+        .lang-btn:hover, .lang-btn.active { background: #45f3ff; color: #000; box-shadow: 0 0 15px #45f3ff; }
 
-        /* Start Screen */
-        #start-screen { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .start-btn { padding: 20px 60px; font-size: 1.5rem; background: var(--main); border: none; border-radius: 50px; cursor: pointer; font-weight: bold; transition: 0.3s; box-shadow: 0 5px 15px rgba(255,204,0,0.3); }
-        .start-btn:hover { transform: scale(1.1); box-shadow: 0 0 25px var(--main); }
+        /* Başla Düyməsi */
+        #start-btn { padding: 15px 50px; font-size: 24px; background: #e74c3c; color: white; border: none; font-weight: bold; text-transform: uppercase; border-radius: 50px; cursor: pointer; transition: 0.3s; box-shadow: 0 5px 25px rgba(231,76,60,0.5); }
+        #start-btn:hover { background: #c0392b; transform: scale(1.05); box-shadow: 0 5px 35px rgba(231,76,60,0.8); }
 
-        .brand { font-size: 0.8rem; color: #666; position: absolute; bottom: 20px; width: 100%; }
+        /* UI Oyun İçi Yazılar */
+        #ui-layer { position: absolute; top: 20px; left: 20px; right: 20px; display: flex; justify-content: space-between; color: #fff; font-size: 22px; pointer-events: none; font-weight: bold; text-shadow: 2px 2px 5px #000; }
+        .ui-box { background: rgba(31, 40, 51, 0.8); padding: 10px 20px; border-radius: 8px; border-left: 5px solid #f1c40f; }
+        #ammo-board { border-left: 5px solid #e74c3c; }
+
+        /* PUBG Stil Yaşıl Nişangah */
+        #crosshair { position: absolute; top: 50%; left: 50%; width: 24px; height: 24px; transform: translate(-50%, -50%); pointer-events: none; z-index: 50; }
+        #crosshair::before, #crosshair::after { content: ''; position: absolute; background: #00ff00; }
+        #crosshair::before { top: 11px; left: 0; width: 24px; height: 2px; }
+        #crosshair::after { top: 0; left: 11px; width: 2px; height: 24px; }
+
+        /* Hitmarker (Dəyəndə çıxan X) */
+        #hitmarker { position: absolute; top: 50%; left: 50%; width: 20px; height: 20px; transform: translate(-50%, -50%) rotate(45deg); pointer-events: none; display: none; z-index: 51; }
+        #hitmarker::before, #hitmarker::after { content: ''; position: absolute; background: #fff; }
+        #hitmarker::before { top: 9px; left: 0; width: 20px; height: 2px; }
+        #hitmarker::after { top: 0; left: 9px; width: 2px; height: 20px; }
+
+        /* Silah (M416 Ultra Animasiyalı) */
+        #weapon { position: absolute; bottom: 0; right: 15%; width: 400px; pointer-events: none; transform-origin: bottom right; transition: transform 0.04s; z-index: 10; }
+        .recoil { transform: translateY(25px) translateX(5px) rotate(-7deg) scale(0.93); }
+
+        /* Botlar / Hədəflər */
+        .target { position: absolute; width: 90px; height: 120px; background: url('https://img.icons8.com/color/96/pubg-helmet.png') no-repeat center, #34495e; background-size: 70%; border: 3px solid #f1c40f; border-radius: 12px; cursor: pointer; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 5px; color: white; font-weight: bold; font-size: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.6); transition: transform 0.1s; }
+
+        /* Atəş Alovu */
+        #flash { position: absolute; bottom: 280px; right: 33%; width: 80px; height: 80px; background: radial-gradient(circle, rgba(255,230,0,1) 0%, rgba(255,69,0,0.8) 40%, rgba(0,0,0,0) 70%); display: none; pointer-events: none; z-index: 12; }
+
+        /* Qan Effekti (Splatter) */
+        .blood { position: absolute; width: 40px; height: 40px; background: radial-gradient(circle, rgba(200,0,0,0.9) 0%, rgba(100,0,0,0) 70%); border-radius: 50%; pointer-events: none; z-index: 5; animation: fadeOut 0.4s forwards; }
+
+        @keyframes fadeOut { to { opacity: 0; transform: scale(2); } }
     </style>
 </head>
 <body>
 
-    <div id="start-screen">
-        <div class="lang-bar">
-            <span onclick="setLang('az')" class="l-btn">AZERBAIJAN</span> | 
-            <span onclick="setLang('tr')" class="l-btn">TÜRKÇE</span> | 
-            <span onclick="setLang('en')" class="l-btn">ENGLISH</span>
+    <div id="main-menu">
+        <div id="menu-title" id="title-text">PUBG Mini Arena</div>
+        
+        <div class="lang-panel">
+            <button class="lang-btn active" onclick="setLanguage('az')">AZ</button>
+            <button class="lang-btn" onclick="setLanguage('en')">EN</button>
+            <button class="lang-btn" onclick="setLanguage('tr')">TR</button>
         </div>
-        <h1 style="color: var(--main); font-size: 2.5rem; margin-bottom: 5px;">BLOCK BLAST</h1>
-        <p style="margin-bottom: 40px; color: #aaa;" id="welcome">Vagif və Duygu tərəfindən yaradıldı</p>
-        
-        <button class="start-btn" id="start-btn" onclick="startGame()">BAŞLAT</button>
-        
-        <div class="brand">© 2026 Vagif & Duygu Digital Studio</div>
+
+        <button id="start-btn" onclick="startGame()">Oyuna Başla</button>
     </div>
 
     <div id="game-container">
-        <div class="header" style="width: 100%; position: fixed; top: 0;">
-            <h2 id="m-title" style="margin: 0; font-size: 1rem; color: var(--main);">VAGIF & DUYGU GAMES</h2>
-            <div class="stats">
-                <div><span id="txt-score">Xal</span>: <span id="score">0</span></div>
-                <div><span id="txt-high">Rekord</span>: <span id="high">0</span></div>
-            </div>
+        <div id="ui-layer">
+            <div class="ui-box" id="score-text">XAL: <span id="score">0</span></div>
+            <div class="ui-box" id="time-text">ZAMAN: <span id="timer">60</span>s</div>
+            <div class="ui-box" id="ammo-board"><span id="ammo-text">GÜLLƏ</span>: <span id="ammo">30</span>/30</div>
         </div>
-        
-        <div id="grid"></div>
-        <p id="msg" style="margin-top:20px; color: var(--main); font-weight: bold;">Blokları yerləşdirin!</p>
+
+        <div id="crosshair"></div>
+        <div id="hitmarker"></div>
+        <div id="flash"></div>
+
+        <svg id="weapon" viewBox="0 0 200 100">
+            <rect x="140" y="40" width="50" height="20" fill="#2d3436" rx="5"/>
+            <rect x="60" y="30" width="80" height="25" fill="#1e272e"/>
+            <path d="M 90 55 L 80 85 L 95 85 L 105 55 Z" fill="#2d3436"/>
+            <rect x="10" y="38" width="50" height="6" fill="#7f8c8d"/>
+            <rect x="70" y="23" width="30" height="7" fill="#f1c40f"/> </svg>
     </div>
 
     <script>
-        let score = 0;
-        let highScore = localStorage.getItem('blockHigh') || 0;
-        document.getElementById('high').innerText = highScore;
-
-        const ui = {
-            az: { title: "VAGIF & DUYGU GAMES", welcome: "Vagif və Duygu tərəfindən yaradıldı", start: "BAŞLAT", score: "Xal", high: "Rekord", msg: "Blokları yerləşdirin!" },
-            tr: { title: "VAGIF & DUYGU OYUNLARI", welcome: "Vagif ve Duygu tarafından yapıldı", start: "BAŞLAT", score: "Puan", high: "Rekor", msg: "Blokları yerleştirin!" },
-            en: { title: "VAGIF & DUYGU GAMES", welcome: "Created by Vagif & Duygu", start: "START", score: "Score", high: "High Score", msg: "Place the blocks!" }
+        // Dil Paketi lüğəti
+        const languages = {
+            az: { title: "PUBG MİNLİ ARENA", start: "Oyuna Başla", score: "XAL", ammo: "GÜLLƏ", time: "ZAMAN", end: "OYUN BİTDİ! SƏNİN XALIN: " },
+            en: { title: "PUBG MINI ARENA", start: "START GAME", score: "SCORE", ammo: "AMMO", time: "TIME", end: "GAME OVER! YOUR SCORE: " },
+            tr: { title: "PUBG MİNİ ARENA", start: "OYUNA BAŞLA", score: "SKOR", ammo: "MERMİ", time: "SÜRE", end: "OYUN BİTTİ! SKORUN: " }
         };
 
-        function setLang(l) {
-            document.getElementById('m-title').innerText = ui[l].title;
-            document.getElementById('welcome').innerText = ui[l].welcome;
-            document.getElementById('start-btn').innerText = ui[l].start;
-            document.getElementById('txt-score').innerText = ui[l].score;
-            document.getElementById('txt-high').innerText = ui[l].high;
-            document.getElementById('msg').innerText = ui[l].msg;
+        let currentLang = 'az';
+        let score = 0;
+        let ammo = 30;
+        let timeLeft = 60;
+        let isReloading = false;
+        let gameActive = false;
+        let gameTimer;
+
+        // Dil Dəyişmə funksiyası
+        function setLanguage(lang) {
+            currentLang = lang;
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Menyunu Tərcümə Et
+            document.getElementById('menu-title').innerText = languages[lang].title;
+            document.getElementById('start-btn').innerText = languages[lang].start;
         }
 
+        // Oyunu Başlatmaq
         function startGame() {
-            // FULL SCREEN AKTİV ETMƏK
-            let elem = document.documentElement;
-            if (elem.requestFullscreen) {
-                elem.requestFullscreen();
-            } else if (elem.webkitRequestFullscreen) { /* Safari */
-                elem.webkitRequestFullscreen();
-            } else if (elem.msRequestFullscreen) { /* IE11 */
-                elem.msRequestFullscreen();
-            }
-
-            document.getElementById('start-screen').style.display = 'none';
-            document.getElementById('game-container').style.display = 'flex';
-            createGrid();
+            document.getElementById('main-menu').style.display = 'none';
+            document.getElementById('game-container').style.display = 'block';
+            
+            // UI Yenilə
+            updateUI();
+            gameActive = true;
+            score = 0;
+            ammo = 30;
+            timeLeft = 60;
+            
+            // Taymeri işə sal
+            gameTimer = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').innerText = timeLeft;
+                if(timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
         }
 
-        function createGrid() {
-            const grid = document.getElementById('grid');
-            grid.innerHTML = '';
-            for (let i = 0; i < 64; i++) {
-                const cell = document.createElement('div');
-                cell.className = 'cell';
-                cell.onclick = function() {
-                    if(!this.classList.contains('filled')) {
-                        this.classList.add('filled');
-                        updateScore();
-                    }
-                };
-                grid.appendChild(cell);
-            }
+        function updateUI() {
+            document.getElementById('score-text').innerHTML = `${languages[currentLang].score}: <span id="score">${score}</span>`;
+            document.getElementById('time-text').innerHTML = `${languages[currentLang].time}: <span id="timer">${timeLeft}</span>s`;
+            document.getElementById('ammo-board').innerHTML = `<span id="ammo-text">${languages[currentLang].ammo}</span>: <span id="ammo">${ammo}</span>/30`;
         }
 
-        function updateScore() {
-            score += 10;
-            document.getElementById('score').innerText = score;
-            if (score > highScore) {
-                highScore = score;
-                localStorage.setItem('blockHigh', highScore);
-                document.getElementById('high').innerText = highScore;
-            }
+        // JS Daxili Səs Generatoru (Daha bərk və real atəş səsi)
+        function playShootSound() {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(450, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(10, ctx.currentTime + 0.08);
+            gain.gain.setValueAtTime(0.4, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(); osc.stop(ctx.currentTime + 0.08);
         }
+
+        function playReloadSound() {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(200, ctx.currentTime);
+            osc.frequency.setValueAtTime(500, ctx.currentTime + 0.15);
+            gain.gain.setValueAtTime(0.2, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.start(); osc.stop(ctx.currentTime + 0.3);
+        }
+
+        // Bot Yaratma (PUBG Kasklı Botlar)
+        function createTarget() {
+            if(!gameActive || document.querySelectorAll('.target').length >= 4) return;
+
+            const target = document.createElement('div');
+            target.className = 'target';
+            target.innerText = 'ENEMY';
+            
+            const x = Math.random() * (window.innerWidth - 120) + 40;
+            const y = Math.random() * (window.innerHeight - 320) + 120;
+            
+            target.style.left = `${x}px`;
+            target.style.top = `${y}px`;
+            document.getElementById('game-container').appendChild(target);
+
+            // Bot vurulanda
+            target.addEventListener('mousedown', (e) => {
+                if (ammo > 0 && !isReloading && gameActive) {
+                    score += 10;
+                    document.getElementById('score').innerText = score;
+                    
+                    // Hitmarker (X) Göstər
+                    const hm = document.getElementById('hitmarker');
+                    hm.style.display = 'block';
+                    setTimeout(() => hm.style.display = 'none', 60);
+
+                    // Qan Splatter Effekti
+                    const blood = document.createElement('div');
+                    blood.className = 'blood';
+                    blood.style.left = `${e.clientX - 20}px`;
+                    blood.style.top = `${e.clientY - 20}px`;
+                    document.getElementById('game-container').appendChild(blood);
+                    setTimeout(() => blood.remove(), 400);
+
+                    target.remove();
+                    e.stopPropagation();
+                    shootEffects();
+                }
+            });
+
+            // 2.5 saniyəyə vurulmasa qaçsın bot
+            setTimeout(() => { if(target.parentNode) target.remove(); }, 2500);
+        }
+
+        function shootEffects() {
+            ammo--;
+            document.getElementById('ammo').innerText = ammo;
+            playShootSound();
+
+            // M416 Sprey (Recoil) və Flash
+            const weapon = document.getElementById('weapon');
+            const flash = document.getElementById('flash');
+            weapon.classList.add('recoil');
+            flash.style.display = 'block';
+            
+            setTimeout(() => {
+                weapon.classList.remove('recoil');
+                flash.style.display = 'none';
+            }, 40);
+        }
+
+        // Boş yerə atəş
+        document.getElementById('game-container').addEventListener('mousedown', () => {
+            if (!gameActive || isReloading || ammo <= 0) return;
+            shootEffects();
+        });
+
+        // Maqazin Dəyişmə (Reload)
+        function reload() {
+            if (ammo === 30 || isReloading || !gameActive) return;
+            isReloading = true;
+            playReloadSound();
+            document.getElementById('ammo-board').innerText = "RELOADING...";
+            
+            setTimeout(() => {
+                ammo = 30;
+                document.getElementById('ammo-board').innerHTML = `<span id="ammo-text">${languages[currentLang].ammo}</span>: <span id="ammo">${ammo}</span>/30`;
+                isReloading = false;
+            }, 1200);
+        }
+
+        // R düyməsi ilə reload
+        window.addEventListener('keydown', (e) => {
+            if (e.key.toLowerCase() === 'r') reload();
+        });
+
+        // Oyunun Bitməsi
+        function endGame() {
+            gameActive = false;
+            clearInterval(gameTimer);
+            alert(languages[currentLang].end + score);
+            document.querySelectorAll('.target').forEach(t => t.remove());
+            document.getElementById('game-container').style.display = 'none';
+            document.getElementById('main-menu').style.display = 'flex';
+        }
+
+        // Bot Dövrü
+        setInterval(createTarget, 900);
     </script>
 </body>
 </html>
